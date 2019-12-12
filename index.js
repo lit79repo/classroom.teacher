@@ -3,8 +3,8 @@ const Network = require('ataraxia');
 const TCPTransport = require('ataraxia-tcp');
 const { exec } = require('child_process');
 const { join } = require("path");
-// const { saveSnapshot } = require("vnc-snapshot");
-// const uuid = require("uuid/v1");
+const { saveSnapshot } = require("vnc-snapshot");
+const uuid = require("uuid/v1");
 
 const net = new Network({ name: '206' });
 const express = require("express");
@@ -20,7 +20,8 @@ let createWindow = () => {
         webPreferences: {
             nodeIntegration: true,
         },
-        autoHideMenuBar: true
+        autoHideMenuBar: true,
+        zoomFactor: 2
     });
     mainWindow.loadURL('http://localhost:8080');
     mainWindow.on('closed', function () {
@@ -53,12 +54,12 @@ ipcMain.on('app_version', (event) => {
 net.addTransport(new TCPTransport());
 
 net.on('node:available', node => {
-    console.log('New Machine:', node.id);
+    // console.log('New Machine:', node.id);
 });
 
 net.on('message', msg => {
     //   console.log('A message was received', msg.type, 'with data', msg, 'from', msg.returnPath.id);
-    if (msg.type === "myInfo") machines.push(msg.data);
+    if (msg.type === "myInfo") machines.push(msg.data); machines = Array.from(new Set(machines));
 });
 
 api.use((req, res, next) => {
@@ -83,13 +84,13 @@ api.get("/vnc/:machine", (req, res) => {
     res.end();
 })
 
-/*app.get("/vncview/:machine", (req, res) => {
+api.get("/vncview/:machine", (req, res) => {
     const { machine } = req.params;
-    saveSnapshot(uuid()+'.png', {host:machine, password:"tetris"}).then((filePath) => {
-    res.sendFile(filePath);
-  })
+    saveSnapshot(uuid() + '.png', { host: machine, password: "tetris" }, { w: 1024, h: 768 }).then((filePath) => {
+        res.sendFile(filePath);
+    })
     res.end();
-})*/
+})
 
 api.on('ready', () => {
     createWindow();

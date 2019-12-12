@@ -58,19 +58,25 @@
                     >
                       <v-card-title v-text="machine.hostname"></v-card-title>
                     </v-img -->
-                                <v-card-title v-text="machine.hostname"></v-card-title>
+                                <v-card-title v-text="(machine.hostname ? machine.hostname : machine.ip)">
+                                </v-card-title>
                                 <v-card-actions>
-                                    <v-btn @click="lock(machine.ip)" icon>
+                                    <v-btn @click="lock((machine.hostname ? machine.hostname : machine.ip))" icon>
                                         <v-icon>mdi-lock</v-icon>
                                     </v-btn>
-                                    <v-btn @click="unlock(machine.ip)" icon>
+                                    <v-btn @click="unlock((machine.hostname ? machine.hostname : machine.ip))" icon>
                                         <v-icon>mdi-lock-open</v-icon>
                                     </v-btn>
                                     <v-spacer></v-spacer>
-                                    <v-btn @click="vnc(machine.ip)" color="blue">Управлять</v-btn>
+                                    <v-btn @click="vnc((machine.hostname ? machine.hostname : machine.ip))" icon>
+                                        <v-icon>mdi-devices</v-icon>
+                                    </v-btn>
                                     <v-spacer></v-spacer>
-                                    <a target="_system" :href="'http://'+machine.hostname+':7979/filemanager'">
-                                        <v-btn color="blue" rounded>Файлы</v-btn>
+                                    <a target="_system"
+                                        :href="'http://'+(machine.hostname ? machine.hostname : machine.ip)+':7979/filemanager'">
+                                        <v-btn icon>
+                                            <v-icon>mdi-folder</v-icon>
+                                        </v-btn>
                                     </a>
                                 </v-card-actions>
                             </v-card>
@@ -106,7 +112,7 @@
                     const Fetch = await fetch("/machines");
                     const response = await Fetch.json();
                     this.machines = response;
-                    this.machines.sort((a, b) => a.hostname.localeCompare(b.hostname))
+                    this.machines.sort((a, b) => a.hostname.localeCompare((b.hostname ? b.hostname : b.ip)));
                     return response;
                 },
                 async lock(host) {
@@ -129,6 +135,7 @@
             },
             created() {
                 this.fetchMachines();
+                setInterval(this.fetchMachines(), 1000);
             }
         })
     </script>
