@@ -1,0 +1,6 @@
+name: Teacher
+appId: io.marinenko.l79.teacher
+icon: icon.png
+publish:
+  provider: github
+  token: 29ca70c5a4a859bcd1a6b60b6276557d16e51db6

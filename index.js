@@ -1,15 +1,54 @@
+const { app, BrowserWindow, ipcMain } = require('electron');
 const Network = require('ataraxia');
 const TCPTransport = require('ataraxia-tcp');
 const { exec } = require('child_process');
 const { join } = require("path");
-const { saveSnapshot } = require("vnc-snapshot");
-const uuid = require("uuid/v1");
+// const { saveSnapshot } = require("vnc-snapshot");
+// const uuid = require("uuid/v1");
 
 const net = new Network({ name: '206' });
-
 const express = require("express");
-const app = express();
+const api = express();
+
 let machines = [];
+let mainWindow;
+
+let createWindow = () => {
+    mainWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+            nodeIntegration: true,
+        },
+        autoHideMenuBar: true
+    });
+    mainWindow.loadURL('http://localhost:8080');
+    mainWindow.on('closed', function () {
+        mainWindow = null;
+        process.exit();
+    });
+}
+
+app.on('ready', () => {
+    createWindow();
+});
+
+
+app.on('window-all-closed', function () {
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
+
+app.on('activate', function () {
+    if (mainWindow === null) {
+        createWindow();
+    }
+});
+
+ipcMain.on('app_version', (event) => {
+    event.sender.send('app_version', { version: app.getVersion() });
+});
 
 net.addTransport(new TCPTransport());
 
@@ -22,15 +61,15 @@ net.on('message', msg => {
     if (msg.type === "myInfo") machines.push(msg.data);
 });
 
-app.use((req, res, next) => {
+api.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "*");
     next();
 });
 
-app.get("/machines", (req, res) => res.json(machines));
+api.get("/machines", (req, res) => res.json(machines));
 
-app.get("/vnc/:machine", (req, res) => {
+api.get("/vnc/:machine", (req, res) => {
     const { machine } = req.params;
     console.log(`vnc.bat ${machine}`);
     exec(`vnc.bat ${machine}`, (error, stdout, stderr) => {
@@ -52,17 +91,20 @@ app.get("/vnc/:machine", (req, res) => {
     res.end();
 })*/
 
+api.on('ready', () => {
+    createWindow();
+});
 
-app.get("/vncview/:machine", (req, res) => {
+api.get("/vncview/:machine", (req, res) => {
     const { machine } = req.params;
     res.end();
 });
 
 
-app.use("/", express.static(join(__dirname, "static")));
-app.use("/lib", express.static(join(__dirname, "node_modules")));
+api.use("/", express.static(join(__dirname, "static")));
+api.use("/lib", express.static(join(__dirname, "node_modules")));
 
-app.listen(8080, () => {
+api.listen(8080, () => {
     net.start();
     exec("start http://localhost:8080");
 })

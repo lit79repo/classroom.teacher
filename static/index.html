@@ -8,28 +8,49 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
     <link href="/lib/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="/lib/vuetify/dist/vuetify.min.css" rel="stylesheet">
+    <style>
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 200px;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: white;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        }
 
+        .v-toolbar,
+        #app>div>main>div>div>header {
+            border-radius: 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
     <title>79 | Classroom | Teacher</title>
 </head>
 
 <body>
     <div id="app">
         <v-app>
-            <v-content>
-                <v-card style="background: whitesmoke;" class="mx-auto">
-                    <v-toolbar color="indigo" dark>
+            <v-content style="background: whitesmoke;">
+                <v-toolbar color="indigo" dark>
 
-                        <v-toolbar-title>Лицей №79 / Учитель класса </v-toolbar-title>
+                    <v-toolbar-title>Лицей №79 / Учитель класса </v-toolbar-title>
 
-                        <v-spacer></v-spacer>
-                        <a style="color: white;" href="http://marinenko.rf.gd" target="_blank"><v-toolbar-title>Copyright (c) 2019 Misha Marinenko</v-toolbar-title></a>
-                    </v-toolbar>
+                    <v-spacer></v-spacer>
+                    <a style="color: white;" href="http://marinenko.rf.gd" target="_blank">
+                        <v-toolbar-title>Copyright (c) 2019 Misha Marinenko / {{version}}</v-toolbar-title>
+                    </a>
+                </v-toolbar>
 
-                    <v-container fluid>
-                        <v-row dense>
-                            <v-col v-for="machine in machines" :key="machine.hostname" rows="5" cols="6">
-                                <v-card min-width="350px" elevation="5">
-                                    <!--v-img
+                <v-container fluid>
+                    <v-row dense>
+                        <v-col v-for="machine in machines" :key="machine.hostname" rows="5" cols="6">
+                            <v-card min-width="350px" elevation="5">
+                                <!--v-img
                       src="card.src"
                       class="white--text align-end"
                       gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
@@ -37,38 +58,48 @@
                     >
                       <v-card-title v-text="machine.hostname"></v-card-title>
                     </v-img -->
-                                    <v-card-title v-text="machine.hostname"></v-card-title>
-                                    <v-card-actions>
-                                        <v-btn @click="lock(machine.hostname)" icon>
-                                            <v-icon>mdi-lock</v-icon>
-                                        </v-btn>
-                                        <v-btn @click="unlock(machine.hostname)" icon>
-                                            <v-icon>mdi-lock-open</v-icon>
-                                        </v-btn>
-                                        <v-spacer></v-spacer>
-                                        <v-btn @click="vnc(machine.hostname)" color="blue">Управлять</v-btn>
-                                        <v-spacer></v-spacer>
-                                        <a target="_system" :href="'http://'+machine.hostname+':7979/filemanager'">
-                                            <v-btn color="blue" rounded>Файлы</v-btn>
-                                        </a>
-                                    </v-card-actions>
-                                </v-card>
-                            </v-col>
-                        </v-row>
-                    </v-container>
-                </v-card>
+                                <v-card-title v-text="machine.hostname"></v-card-title>
+                                <v-card-actions>
+                                    <v-btn @click="lock(machine.ip)" icon>
+                                        <v-icon>mdi-lock</v-icon>
+                                    </v-btn>
+                                    <v-btn @click="unlock(machine.ip)" icon>
+                                        <v-icon>mdi-lock-open</v-icon>
+                                    </v-btn>
+                                    <v-spacer></v-spacer>
+                                    <v-btn @click="vnc(machine.ip)" color="blue">Управлять</v-btn>
+                                    <v-spacer></v-spacer>
+                                    <a target="_system" :href="'http://'+machine.hostname+':7979/filemanager'">
+                                        <v-btn color="blue" rounded>Файлы</v-btn>
+                                    </a>
+                                </v-card-actions>
+                            </v-card>
+                        </v-col>
+                    </v-row>
+                </v-container>
             </v-content>
         </v-app>
+        <p id="version"></p>
+        <div id="notification" class="hidden">
+            <p id="message"></p>
+            <button id="close-button" onClick="closeNotification()">
+                Close
+            </button>
+            <button id="restart-button" onClick="restartApp()" class="hidden">
+                Restart
+            </button>
+        </div>
     </div>
 
     <script src="/lib/vue/dist/vue.js"></script>
     <script src="/lib/vuetify/dist/vuetify.js"></script>
     <script>
-        new Vue({
+        window.app = new Vue({
             el: '#app',
             vuetify: new Vuetify(),
             data: {
-                machines: []
+                machines: [],
+                version: ""
             },
             methods: {
                 async fetchMachines() {
@@ -100,6 +131,36 @@
                 this.fetchMachines();
             }
         })
+    </script>
+    <script>
+        const { ipcRenderer } = require('electron');
+        const version = document.getElementById('version');
+
+        ipcRenderer.send('app_version');
+        ipcRenderer.on('app_version', (event, arg) => {
+            ipcRenderer.removeAllListeners('app_version');
+            app.$data.version = arg.version;
+        });
+        const notification = document.getElementById('notification');
+        const message = document.getElementById('message');
+        const restartButton = document.getElementById('restart-button');
+        ipcRenderer.on('update_available', () => {
+            ipcRenderer.removeAllListeners('update_available');
+            message.innerText = 'A new update is available. Downloading now...';
+            notification.classList.remove('hidden');
+        });
+        ipcRenderer.on('update_downloaded', () => {
+            ipcRenderer.removeAllListeners('update_downloaded');
+            message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
+            restartButton.classList.remove('hidden');
+            notification.classList.remove('hidden');
+        });
+        function closeNotification() {
+            notification.classList.add('hidden');
+        }
+        function restartApp() {
+            ipcRenderer.send('restart_app');
+        }
     </script>
 </body>
 
