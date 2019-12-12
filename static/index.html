@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="/lib/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="/lib/vuetify/dist/vuetify.min.css" rel="stylesheet">
+
+    <title>79 | Classroom | Teacher</title>
+</head>
+
+<body>
+    <div id="app">
+        <v-app>
+            <v-content>
+                <v-card style="background: whitesmoke;" class="mx-auto">
+                    <v-toolbar color="indigo" dark>
+
+                        <v-toolbar-title>Лицей №79 / Учитель класса </v-toolbar-title>
+
+                        <v-spacer></v-spacer>
+                        <a style="color: white;" href="http://marinenko.rf.gd" target="_blank"><v-toolbar-title>Copyright (c) 2019 Misha Marinenko</v-toolbar-title></a>
+                    </v-toolbar>
+
+                    <v-container fluid>
+                        <v-row dense>
+                            <v-col v-for="machine in machines" :key="machine.hostname" rows="5" cols="6">
+                                <v-card min-width="350px" elevation="5">
+                                    <!--v-img
+                      src="card.src"
+                      class="white--text align-end"
+                      gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+                      height="200px"
+                    >
+                      <v-card-title v-text="machine.hostname"></v-card-title>
+                    </v-img -->
+                                    <v-card-title v-text="machine.hostname"></v-card-title>
+                                    <v-card-actions>
+                                        <v-btn @click="lock(machine.hostname)" icon>
+                                            <v-icon>mdi-lock</v-icon>
+                                        </v-btn>
+                                        <v-btn @click="unlock(machine.hostname)" icon>
+                                            <v-icon>mdi-lock-open</v-icon>
+                                        </v-btn>
+                                        <v-spacer></v-spacer>
+                                        <v-btn @click="vnc(machine.hostname)" color="blue">Управлять</v-btn>
+                                        <v-spacer></v-spacer>
+                                        <a target="_system" :href="'http://'+machine.hostname+':7979/filemanager'">
+                                            <v-btn color="blue" rounded>Файлы</v-btn>
+                                        </a>
+                                    </v-card-actions>
+                                </v-card>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                </v-card>
+            </v-content>
+        </v-app>
+    </div>
+
+    <script src="/lib/vue/dist/vue.js"></script>
+    <script src="/lib/vuetify/dist/vuetify.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            vuetify: new Vuetify(),
+            data: {
+                machines: []
+            },
+            methods: {
+                async fetchMachines() {
+                    const Fetch = await fetch("/machines");
+                    const response = await Fetch.json();
+                    this.machines = response;
+                    this.machines.sort((a, b) => a.hostname.localeCompare(b.hostname))
+                    return response;
+                },
+                async lock(host) {
+                    const Fetch = await fetch("http://" + host + ":7979/lock");
+                    // const response = await Fetch.json();
+                    // this.machines = response;
+                    return Fetch;
+                },
+                async unlock(host) {
+                    const Fetch = await fetch("http://" + host + ":7979/unlock");
+                    // const response = await Fetch.json();
+                    // this.machines = response;
+                    return Fetch;
+                },
+                async vnc(host) {
+                    const Fetch = await fetch("/vnc/" + host);
+                    // this.machines = response;
+                    return Fetch;
+                }
+            },
+            created() {
+                this.fetchMachines();
+            }
+        })
+    </script>
+</body>
+
+</html>
