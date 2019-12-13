@@ -19,12 +19,6 @@
             background-color: white;
             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
         }
-
-        .v-toolbar,
-        #app>div>main>div>div>header {
-            border-radius: 0;
-        }
-
         .hidden {
             display: none;
         }
@@ -41,8 +35,10 @@
                     <v-toolbar-title>Лицей №79 / Учитель класса </v-toolbar-title>
 
                     <v-spacer></v-spacer>
+                    <v-btn @click='refresh'>Обновить информацию</v-btn>
+                    <v-spacer></v-spacer>
                     <a style="color: white;" href="http://marinenko.rf.gd" target="_blank">
-                        <v-toolbar-title>Copyright (c) 2019 Misha Marinenko / {{version}}</v-toolbar-title>
+                        <h5>Copyright (c) 2019 Misha Marinenko / {{version}}</h5>
                     </a>
                 </v-toolbar>
 
@@ -50,15 +46,10 @@
                     <v-row dense>
                         <v-col v-for="machine in machines" :key="machine.hostname" rows="5" cols="6">
                             <v-card min-width="350px" elevation="5">
-                                <!--v-img
-                      src="card.src"
-                      class="white--text align-end"
-                      gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
-                      height="200px"
-                    >
-                      <v-card-title v-text="machine.hostname"></v-card-title>
-                    </v-img -->
-                                <v-card-title v-text="(machine.hostname ? machine.hostname : machine.ip)">
+                                <v-img :src="'http://'+machine.ip+':7979/screenshot'" class="white--text align-end"
+                                    gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)" height="200px">
+                                    <v-card-title v-text="(machine.hostname ? machine.hostname : machine.ip)"></v-card-title>
+                                </v-img>
                                 </v-card-title>
                                 <v-card-actions>
                                     <v-btn @click="lock((machine.hostname ? machine.hostname : machine.ip))" icon>
@@ -131,6 +122,9 @@
                     const Fetch = await fetch("/vnc/" + host);
                     // this.machines = response;
                     return Fetch;
+                },
+                refresh() {
+                    location.href=location.href
                 }
             },
             created() {

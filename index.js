@@ -10,13 +10,17 @@ const net = new Network({ name: '206' });
 const express = require("express");
 const api = express();
 
+api.use(require("body-parser")("extended"));
+
 let machines = [];
 let mainWindow;
 
 let createWindow = () => {
     mainWindow = new BrowserWindow({
-        width: 800,
+        width: 1000,
+        minWidth: 1000,
         height: 600,
+        minHeight: 600,
         webPreferences: {
             nodeIntegration: true,
         },
@@ -107,6 +111,5 @@ api.use("/lib", express.static(join(__dirname, "node_modules")));
 
 api.listen(8080, () => {
     net.start();
-    exec("start http://localhost:8080");
 })
 
