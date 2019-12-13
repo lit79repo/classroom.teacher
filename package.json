@@ -1,7 +1,7 @@
 {
   "name": "@lit79/classroom.teacher",
-  "version": "0.1.0",
-  "description": "",
+  "version": "3.0.5",
+  "description": "Teacher Part of Software.",
   "main": "index.js",
   "scripts": {
     "build": "electron-builder build --win --publish never",
