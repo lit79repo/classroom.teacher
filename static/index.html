@@ -19,6 +19,7 @@
             background-color: white;
             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
         }
+
         .hidden {
             display: none;
         }
@@ -29,6 +30,27 @@
 <body>
     <div id="app">
         <v-app>
+            <v-dialog v-model="searching" hide-overlay persistent width="300">
+                <v-card color="primary" dark>
+                    <v-card-text>
+                        <v-progress-linear indeterminate color="white" class="mb-0"></v-progress-linear>
+                    </v-card-text>
+                </v-card>
+            </v-dialog>
+            <v-dialog v-model="moreDialog" persistent max-width="290">
+                <v-card dark>
+                    <v-card-title class="headline">Общие Действия</v-card-text>
+                        <v-card-text> <v-btn @click="turnOffAll" dark>Выключить Всё</v-btn> <br><br> <v-text-field
+                            v-model="command"
+                            label="Открыть"
+                            required
+                          ></v-text-field> <v-btn @click="open">Выполнить открытие</v-btn> </v-card-text>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn dark @click="moreDialog = false">назад</v-btn>
+                        </v-card-actions>
+                </v-card>
+            </v-dialog>
             <v-content style="background: whitesmoke;">
                 <v-toolbar color="indigo" dark>
 
@@ -36,6 +58,10 @@
 
                     <v-spacer></v-spacer>
                     <v-btn @click='refresh'>Обновить информацию</v-btn>
+                    <v-spacer></v-spacer>
+                    <v-btn @click='moreDialog = true'>
+                        <v-icon>mdi-more</v-icon>
+                    </v-btn>
                     <v-spacer></v-spacer>
                     <a style="color: white;" href="http://marinenko.rf.gd" target="_blank">
                         <h5>Copyright (c) 2019 Misha Marinenko / {{version}}</h5>
@@ -48,7 +74,8 @@
                             <v-card min-width="350px" elevation="5">
                                 <v-img :src="'http://'+machine.ip+':7979/screenshot'" class="white--text align-end"
                                     gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)" height="200px">
-                                    <v-card-title v-text="(machine.hostname ? machine.hostname : machine.ip)"></v-card-title>
+                                    <v-card-title v-text="(machine.hostname ? machine.hostname : machine.ip)">
+                                    </v-card-title>
                                 </v-img>
                                 </v-card-title>
                                 <v-card-actions>
@@ -61,6 +88,10 @@
                                     <v-spacer></v-spacer>
                                     <v-btn @click="vnc((machine.hostname ? machine.hostname : machine.ip))" icon>
                                         <v-icon>mdi-devices</v-icon>
+                                    </v-btn>
+                                    <v-spacer></v-spacer>
+                                    <v-btn @click="poweroff((machine.hostname ? machine.hostname : machine.ip))" icon>
+                                        <v-icon>mdi-power-settings</v-icon>
                                     </v-btn>
                                     <v-spacer></v-spacer>
                                     <a target="_system"
@@ -96,7 +127,19 @@
             vuetify: new Vuetify(),
             data: {
                 machines: [],
-                version: ""
+                version: "",
+                searching: true,
+                moreDialog: false,
+                command: ""
+            },
+            watch: {
+                machines() {
+                    if (this.machines.length >= 0) {
+                        this.searching = false;
+                    } else {
+                        this.searching = true;
+                    }
+                }
             },
             methods: {
                 async fetchMachines() {
@@ -123,8 +166,27 @@
                     // this.machines = response;
                     return Fetch;
                 },
+                async poweroff(host) {
+                    const Fetch = await fetch("http://" + host + ":7979/cmd/shutdown -s -f -t 10");
+                    // this.machines = response;
+                    return Fetch;
+                },
                 refresh() {
-                    location.href=location.href
+                    location.href = location.href
+                },
+                turnOffAll() {
+                    this.searching = true;
+                    this.machines.forEach((machine)=>{
+                        this.poweroff(machine.ip);
+                    })
+                    this.searching = false;
+                },
+                async open(){
+                    this.searching = true;
+                    this.machines.forEach((machine)=>{
+                        fetch("http://" + machine.ip + ":7979/cmd/start "+this.command);
+                    })
+                    this.searching = false;
                 }
             },
             created() {

@@ -88,21 +88,9 @@ api.get("/vnc/:machine", (req, res) => {
     res.end();
 })
 
-api.get("/vncview/:machine", (req, res) => {
-    const { machine } = req.params;
-    saveSnapshot(uuid() + '.png', { host: machine, password: "tetris" }, { w: 1024, h: 768 }).then((filePath) => {
-        res.sendFile(filePath);
-    })
-    res.end();
-})
 
 api.on('ready', () => {
     createWindow();
-});
-
-api.get("/vncview/:machine", (req, res) => {
-    const { machine } = req.params;
-    res.end();
 });
 
 
