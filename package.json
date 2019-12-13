@@ -1,6 +1,6 @@
 {
   "name": "@lit79/classroom.teacher",
-  "version": "3.0.61",
+  "version": "3.0.7",
   "description": "Teacher Part of Software.",
   "main": "index.js",
   "scripts": {
