@@ -77,7 +77,7 @@ api.get("/machines", (req, res) => res.json(machines));
 api.get("/vnc/:machine", (req, res) => {
     const { machine } = req.params;
     console.log(`vnc.bat ${machine}`);
-    exec(`vnc.bat ${machine}`, (error, stdout, stderr) => {
+    exec(`"C:/Program Files/TightVNC/tvnviewer.exe" -host=${machine} -password=tetris`, (error, stdout, stderr) => {
         if (error) {
             console.error(`exec error: ${error}`);
             return;
