@@ -3,11 +3,18 @@ const Network = require('ataraxia');
 const TCPTransport = require('ataraxia-tcp');
 const { exec } = require('child_process');
 const { join } = require("path");
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
 const uuid = require("uuid/v1");
 
-let classroom = "206";
+const { userInfo } = require("os");
 
-const net = new Network({ name: classroom });
+const adapter = new FileSync(userInfo().homedir + "/cfg.json");
+const db = low(adapter);
+db.defaults({ config: { classroom: "206" } }).write();
+console.log(db.get('config.classroom').value());
+
+const net = new Network({ name: db.get('config.classroom').value() });
 const express = require("express");
 const api = express();
 
@@ -59,7 +66,7 @@ net.addTransport(new TCPTransport());
 
 net.on('node:available', node => {
     // console.log('New Machine:', node.id);
-    node.send("classroom", )
+    node.send("classroom")
 });
 
 net.on('message', msg => {
@@ -93,6 +100,16 @@ api.get("/vnc/:machine", (req, res) => {
 api.on('ready', () => {
     createWindow();
 });
+
+
+api.get("/room", (req, res) => {
+    res.send(db.get('config.classroom').value());
+})
+
+api.get("/setRoom", (req, res) => {
+    if (req.query.room) db.set('config.classroom', req.query.room).write();
+    process.exit();
+})
 
 
 api.use("/", express.static(join(__dirname, "static")));
