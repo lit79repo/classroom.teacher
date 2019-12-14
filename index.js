@@ -3,14 +3,14 @@ const Network = require('ataraxia');
 const TCPTransport = require('ataraxia-tcp');
 const { exec } = require('child_process');
 const { join } = require("path");
-const { saveSnapshot } = require("vnc-snapshot");
 const uuid = require("uuid/v1");
 
-const net = new Network({ name: '206' });
+let classroom = "206";
+
+const net = new Network({ name: classroom });
 const express = require("express");
 const api = express();
 
-api.use(require("body-parser")("extended"));
 
 let machines = [];
 let mainWindow;
@@ -59,6 +59,7 @@ net.addTransport(new TCPTransport());
 
 net.on('node:available', node => {
     // console.log('New Machine:', node.id);
+    node.send("classroom", )
 });
 
 net.on('message', msg => {

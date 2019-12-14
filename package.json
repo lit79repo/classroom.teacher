@@ -1,12 +1,13 @@
 {
   "name": "@lit79/classroom.teacher",
-  "version": "3.0.8",
+  "version": "3.0.9",
   "description": "Teacher Part of Software.",
   "main": "index.js",
   "scripts": {
     "build": "electron-builder build --win --publish never",
     "deploy": "electron-builder build --win --publish always",
     "start": "electron .",
+    "dev": "nodemon --exec electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Misha Marinenko <0x77dev@protonmail.com>",
@@ -19,7 +20,9 @@
     "body-parser": "^1.19.0",
     "electron-updater": "^4.2.0",
     "express": "^4.17.1",
+    "lowdb": "^1.0.0",
     "node-rfb": "^0.0.2",
+    "nodemon": "^2.0.2",
     "screenshot-desktop": "^1.10.0",
     "uuid": "^3.3.3",
     "vnc-snapshot": "^0.5.2",
