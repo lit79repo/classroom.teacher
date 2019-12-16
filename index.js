@@ -8,7 +8,7 @@ const FileSync = require('lowdb/adapters/FileSync');
 const uuid = require("uuid/v1");
 
 const { userInfo } = require("os");
-
+const { address } = require('ip');
 const adapter = new FileSync(userInfo().homedir + "/cfg.json");
 const db = low(adapter);
 db.defaults({ config: { classroom: "206" } }).write();
@@ -105,6 +105,8 @@ api.on('ready', () => {
 api.get("/room", (req, res) => {
     res.send(db.get('config.classroom').value());
 })
+
+api.get("/ip", (req, res) => res.send({ ip: address() }));
 
 api.get("/setRoom", (req, res) => {
     if (req.query.room) db.set('config.classroom', req.query.room).write();

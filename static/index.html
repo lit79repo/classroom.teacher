@@ -43,6 +43,7 @@
                     <v-card-title class="headline">Общие Действия</v-card-text>
                         <v-card-text>
                             <v-btn @click="turnOffAll" dark>Выключить Машины <br> через 15 секунд</v-btn> <br><br>
+                            <v-btn @click="turnOffAll" dark>Трансляция Экрана </v-btn> <br><br>
                             <v-btn @click="command = 'shutdown -a'; open()" dark>Отменить отключение</v-btn> <br><br>
                             <v-text-field v-model="command" label="Комманда" required></v-text-field>
                             <v-btn @click="open">Выполнить комманду</v-btn>
@@ -193,6 +194,15 @@
                     this.searching = true;
                     this.machines.forEach((machine) => {
                         fetch(`http://${machine.ip}:7979/cmd/?command=start ${this.command}`);
+                    })
+                    this.searching = false;
+                },
+                async openViewTeacher() {
+                    const myIPFetch = await fetch("/ip");
+                    const myIP = await myIPFetch.json();
+                    this.searching = true;
+                    this.machines.forEach(async (machine) => {
+                        await fetch(`http://${machine.ip}:7979/cmd/?command="C:/Program Files/TightVNC/tvnviewer.exe" -host=${myIp.ip} -password=tetrisview`);
                     })
                     this.searching = false;
                 },
