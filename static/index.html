@@ -78,7 +78,8 @@
                             <v-card min-width="350px" elevation="5">
                                 <v-img :src="'http://'+machine.ip+':7979/screenshot'" class="white--text align-end"
                                     gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)" height="200px">
-                                    <v-card-title v-text="(machine.hostname ? machine.hostname : machine.ip)">
+                                    <v-card-title>
+                                        {{ getHostname(machine.ip) }}
                                     </v-card-title>
                                 </v-img>
                                 </v-card-title>
@@ -205,6 +206,11 @@
                         await fetch(`http://${machine.ip}:7979/cmd/?command="C:/Program Files/TightVNC/tvnviewer.exe" -host=${myIp.ip} -password=tetrisview`);
                     })
                     this.searching = false;
+                },
+                async getHostname(ip){ 
+                    const execRequest = await fetch(`http://${ip}:7979/cmd/?command=hostname`);
+                    const hostname = await execRequest.json();
+                    return hostname.stdout;
                 },
                 changeRoom() {
                     alert('Программа закрывается (по причине изменений настроек ядра): откройте ее заново.')
