@@ -30,6 +30,7 @@ let createWindow = () => {
         minHeight: 600,
         webPreferences: {
             nodeIntegration: true,
+            webSecurity: false
         },
         autoHideMenuBar: true,
         zoomFactor: 2
