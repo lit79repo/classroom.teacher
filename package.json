@@ -28,7 +28,7 @@
     "uuid": "^3.3.3",
     "vnc-snapshot": "^0.5.2",
     "vue": "^2.6.10",
-    "vuetify": "^2.1.14"
+    "vuetify": "^2.6.10"
   },
   "repository": {
     "type": "git",
